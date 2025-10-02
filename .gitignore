@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.out
+
+# Environment
+.env
+.env.local
+*.local
+
+# Databases
+*.db
+rocksdb-data/
+leveldb-data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Helm
+*.tgz
+.helmignore
