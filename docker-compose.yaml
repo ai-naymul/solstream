@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  ingestor:
+    build:
+      context: ./packages/ingestor
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - SOLANA_WS_URL=wss://api.devnet.solana.com
+      - SOLANA_HTTP_URL=https://api.devnet.solana.com
+      - COMMITMENT=confirmed
+      - QUEUE_MAX=10000
+      - RING_TTL_SLOTS=10000
+      - ROCKSDB_PATH=/data/rocksdb
+      - PROMETHEUS_PORT=8080
+    volumes:
+      - ./data/rocksdb:/data/rocksdb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  replay:
+    build:
+      context: ./packages/replay
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SOLANA_HTTP_URL=https://api.devnet.solana.com
+      - ARCHIVE_BASE_URL=https://api.devnet.solana.com
+      - ROCKSDB_PATH=/data/rocksdb
+      - REPLAY_BATCH_SIZE=100
+      - MAX_REPLAY_WINDOW=5000
+      - PROMETHEUS_PORT=8081
+    volumes:
+      - ./data/rocksdb:/data/rocksdb
+    depends_on:
+      - ingestor
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./infra/grafana:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  grafana-data:
