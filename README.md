@@ -14,7 +14,7 @@
 ### Local Development (Docker Compose)
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/solstream.git
+git clone https://github.com/ai-naymul/solstream.git
 cd solstream
 
 # Install dependencies
